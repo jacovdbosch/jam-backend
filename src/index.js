@@ -17,7 +17,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers: {
     Query: {
-      quizzes: () => allQuizzes().map(docs => docs.map(transformQuizDoc)),
+      quizzes: () => allQuizzes().map(transformQuizDoc),
       getQuiz: (_, args) => findQuiz(args.id).then(transformQuizDoc)
     },
     Mutation: {
