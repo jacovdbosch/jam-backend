@@ -8,6 +8,10 @@ const typeDefs = gql`
     answers: [Answer]!
   }
 
+  input AnswerInput {
+    label: String!
+  }
+
   type Answer {
     id: ID!
     label: String!
@@ -34,6 +38,7 @@ const typeDefs = gql`
     createQuiz: Quiz
     startQuiz(quizId: ID!): Quiz
     joinQuiz(quizId: ID!, name: String): Quiz
+    addQuestion(quizId: ID!, label: String!, answers: [AnswerInput]!): Quiz
     startQuestion(quizId: ID!): Boolean
     answerQuestion(quizId: ID!, questionId: ID!, answer: String!): Answer
   }

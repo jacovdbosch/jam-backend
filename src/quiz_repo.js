@@ -37,9 +37,21 @@ const addPlayerToQuiz = (quizId, user) => {
   });
 };
 
+const addQuestionToQuiz = (quizId, question) => {
+  return new Promise((resolve, reject) => {
+    quizzes.update({ _id: quizId }, { $push: { questions: question } }, err => {
+      if (err) return reject(err);
+
+      return resolve();
+    });
+  });
+};
+
 module.exports = {
   allQuizzes,
   findQuiz,
   createQuiz,
-  addPlayerToQuiz
+  addPlayerToQuiz,
+  addQuestionToQuiz,
+  quizzes
 };
