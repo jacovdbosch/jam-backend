@@ -1,65 +1,75 @@
 #!usr/bin/env node
 const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./schema");
-const { quizzes, quiz } = require("./database");
+const {
+  allQuizzes,
+  findQuiz,
+  createQuiz,
+  addPlayerToQuiz
+} = require("./quiz_repo");
 const { v4: uuid } = require("uuid");
 
 const transformQuizDoc = quiz => ({ id: quiz._id, ...quiz });
+
+const player = {
+  id: uuid(),
+  score: 12392,
+  answers: []
+};
+
+const questions = {
+  id: uuid(),
+  label: "Vraag yo",
+  answers: [
+    {
+      id: uuid(),
+      label: "Antwoord 1 yo"
+    },
+    {
+      id: uuid(),
+      label: "Antwoord 2 yo"
+    },
+    {
+      id: uuid(),
+      label: "Antwoord 3 yo"
+    },
+    {
+      id: uuid(),
+      label: "Antwoord 4 yo"
+    }
+  ]
+};
+
+const quiz = {
+  id: uuid(),
+  questions: [questions],
+  players: [player]
+};
 
 const server = new ApolloServer({
   typeDefs,
   resolvers: {
     Query: {
-      quizzes: () => quizzes.getAllData().map(transformQuizDoc),
-      getQuiz: (_, args) => {
-        return new Promise(resolve => {
-          quizzes.findOne({ _id: args.id }, (err, doc) => {
-            if (err) throw err;
-
-            resolve(transformQuizDoc(doc));
-          });
-        });
-      }
+      quizzes: () => allQuizzes.then(docs => docs.map(transformQuizDoc)),
+      getQuiz: (_, args) => quiz
     },
     Mutation: {
-      createQuiz: () => {
-        return new Promise(resolve => {
-          const doc = {
-            players: [],
-            questions: []
-          };
-
-          quizzes.insert(doc, function(err, newDoc) {
-            if (err) throw err;
-
-            resolve(transformQuizDoc(newDoc));
-          });
-        });
-      },
+      createQuiz: () => createQuiz().then(transformQuizDoc),
       joinQuiz: (_, args) => {
-        return new Promise((resolve, reject) => {
-          const user = {
-            id: uuid(),
-            name: args.name,
-            score: 0,
-            answers: []
-          };
+        return findQuiz(args.quizId)
+          .then(doc => {
+            const user = {
+              id: uuid(),
+              name: args.name,
+              score: 0,
+              answers: []
+            };
 
-          quizzes.update(
-            { _id: args.quizId },
-            { $push: { players: user } },
-            err => {
-              if (err) return reject(err);
-
-              quizzes.findOne({ _id: args.quizId }, (err, doc) => {
-                if (err) return reject(err);
-
-                return resolve(transformQuizDoc(doc));
-              });
-            }
-          );
-        });
-      }
+            return addPlayerToQuiz(doc._id, user).then(() => findQuiz(doc._id));
+          })
+          .then(transformQuizDoc);
+      },
+      startQuiz: (_, args) => {}
     }
   }
 });
