@@ -25,10 +25,12 @@ const typeDefs = gql`
   }
 
   type Query {
+    quizzes: [Quiz]
     getQuiz(id: ID!): Quiz
   }
 
   type Mutation {
+    createQuiz: Quiz
     startQuiz(quizId: ID!): Quiz
     joinQuiz(quizId: ID!, name: String): Quiz
     startQuestion(quizId: ID!): Boolean
