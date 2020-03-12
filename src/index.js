@@ -18,23 +18,26 @@ const server = new ApolloServer({
   resolvers: {
     Query: {
       quizzes: () => allQuizzes().map(transformQuizDoc),
-      getQuiz: (_, args) => findQuiz(args.id).then(transformQuizDoc)
+      getQuiz: (_, args) => findQuiz(args.id).then(transformQuizDoc),
+      getQuestion: (_, { quizId, questionId }) => {
+        return findQuiz(quizId).then(doc => {
+          return doc.questions.find(question => question.id === questionId);
+        });
+      }
     },
     Mutation: {
       createQuiz: () => createQuiz().then(transformQuizDoc),
       joinQuiz: (_, args) => {
-        return findQuiz(args.quizId)
-          .then(doc => {
-            const user = {
-              id: uuid(),
-              name: args.name,
-              score: 0,
-              answers: []
-            };
+        return findQuiz(args.quizId).then(doc => {
+          const user = {
+            id: uuid(),
+            name: args.name,
+            score: 0,
+            answers: []
+          };
 
-            return addPlayerToQuiz(doc._id, user).then(() => findQuiz(doc._id));
-          })
-          .then(transformQuizDoc);
+          return addPlayerToQuiz(doc._id, user).then(() => user);
+        });
       },
       addQuestion: (_, args) => {
         return findQuiz(args.quizId)

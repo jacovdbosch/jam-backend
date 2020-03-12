@@ -32,12 +32,13 @@ const typeDefs = gql`
   type Query {
     quizzes: [Quiz]
     getQuiz(id: ID!): Quiz
+    getQuestion(quizId: ID!, questionId: ID!): Question!
   }
 
   type Mutation {
     createQuiz: Quiz
     startQuiz(quizId: ID!): Quiz
-    joinQuiz(quizId: ID!, name: String): Quiz
+    joinQuiz(quizId: ID!, name: String): Player
     addQuestion(quizId: ID!, label: String!, answers: [AnswerInput]!): Quiz
     startQuestion(quizId: ID!): Boolean
     answerQuestion(quizId: ID!, questionId: ID!, answer: String!): Answer
