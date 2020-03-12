@@ -4,6 +4,7 @@ const typeDefs = gql`
   type Player {
     id: ID!
     score: Int!
+    name: String!
     answers: [Answer]!
   }
 

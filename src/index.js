@@ -35,6 +35,30 @@ const server = new ApolloServer({
             resolve(transformQuizDoc(newDoc));
           });
         });
+      },
+      joinQuiz: (_, args) => {
+        return new Promise((resolve, reject) => {
+          const user = {
+            id: uuid(),
+            name: args.name,
+            score: 0,
+            answers: []
+          };
+
+          quizzes.update(
+            { _id: args.quizId },
+            { $push: { players: user } },
+            err => {
+              if (err) return reject(err);
+
+              quizzes.findOne({ _id: args.quizId }, (err, doc) => {
+                if (err) return reject(err);
+
+                return resolve(transformQuizDoc(doc));
+              });
+            }
+          );
+        });
       }
     }
   }
