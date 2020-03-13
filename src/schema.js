@@ -64,6 +64,7 @@ const typeDefs = gql`
         addQuestion(quizId: ID!, label: String!, answers: [AnswerInput]!): Quiz
         answerQuestion(quizId: ID!, answer: PlayerAnswerInput): PlayerAnswer
         deleteQuestion(quizId: ID!, questionId: ID!): Quiz
+        resetQuiz(id: ID!): Quiz
     }
 `;
 

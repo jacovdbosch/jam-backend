@@ -1,7 +1,7 @@
 #!usr/bin/env node
 const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./schema");
-const { isEmpty, remove } = require("lodash");
+const { isEmpty, omit } = require("lodash");
 const {
   allQuizzes,
   findQuiz,
@@ -87,7 +87,7 @@ const server = new ApolloServer({
       },
       getQuestion: (_, { quizId, questionId }, context) => {
         return findQuiz(quizId).then((doc) => {
-          context.quiz = doc
+          context.quiz = doc;
 
           const question = doc.questions.find(question => question.id === questionId);
 
@@ -187,6 +187,20 @@ const server = new ApolloServer({
             );
           });
         });
+      },
+      resetQuiz(_, { id }) {
+        return findQuiz(id).then(doc => {
+          let questions = doc.questions.map(question => ({ ...question, playerAnswers: []}));
+          let players = [];
+
+          return new Promise((resolve, reject) => {
+            quizzes.update({ _id: doc._id }, { $set: { questions, players }}, err => {
+              if (err) return reject(err);
+
+              return resolve(findQuiz(doc._id));
+            })
+          });
+        }).then(transformQuizDoc);
       }
     }
   }
