@@ -8,11 +8,13 @@ const typeDefs = gql`
 
     input AnswerInput {
         label: String!
+        correct: Boolean!
     }
 
     type Answer {
         id: ID!
         label: String!
+        correct: Boolean!
     }
 
     input PlayerAnswerInput {
@@ -54,7 +56,7 @@ const typeDefs = gql`
     type Mutation {
         createQuiz: Quiz
         startQuiz(quizId: ID!): Quiz
-        joinQuiz(quizId: ID!, name: String): Player
+        joinQuiz(quizId: ID!, name: String!): Player
         addQuestion(quizId: ID!, label: String!, answers: [AnswerInput]!): Quiz
         startQuestion(quizId: ID!): Boolean
         answerQuestion(quizId: ID!, answer: PlayerAnswerInput): PlayerAnswer

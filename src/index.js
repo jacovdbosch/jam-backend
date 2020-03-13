@@ -1,6 +1,7 @@
 #!usr/bin/env node
 const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./schema");
+const { isEmpty } = require('lodash');
 const {
   allQuizzes,
   findQuiz,
@@ -18,13 +19,25 @@ const server = new ApolloServer({
   resolvers: {
     Quiz: {
       results: (root) => {
-        if (root.questions === undefined) {
+        if (isEmpty(root.questions) || isEmpty(root.players)){
           return [];
         }
 
-        return root.players.map(player => {
-          const totalScore = root.questions.reduce((total, question) => {
-            return total + question.playerAnswers.filter(answer => answer.playerId === player.id).reduce((total, answer) => total + answer.score, 0);
+        const { questions, players } = root;
+
+        return players.map(player => {
+          const totalScore = questions.reduce((total, question) => {
+            if (isEmpty(question.playerAnswers)) {
+              return 0;
+            }
+
+            const playerAnswers = question.playerAnswers.filter(answer => answer.playerId === player.id);
+
+            if (isEmpty(playerAnswers)) {
+              return 0;
+            }
+
+            return total + playerAnswers.reduce((total, answer) => total + answer.score, 0);
           }, 0);
 
           return {
@@ -52,13 +65,13 @@ const server = new ApolloServer({
           return addPlayerToQuiz(doc._id, user).then(() => user);
         });
       },
-      addQuestion: (_, args) => {
-        return findQuiz(args.quizId)
+      addQuestion: (_, { quizId, label, answers }) => {
+        return findQuiz(quizId)
           .then(doc => {
             const question = {
               id: uuid(),
-              label: args.label,
-              answers: args.answers.map(answer => ({
+              label: label,
+              answers: answers.map(answer => ({
                 id: uuid(),
                 ...answer
               }))
@@ -81,9 +94,12 @@ const server = new ApolloServer({
             question => question.id === questionId
           );
 
+          let answer = doc.questions[questionIndex].answers.find(answer => answer.id === answerId);
+
           const playerAnswers = {
             playerId,
-            answerId
+            answerId,
+            score: answer.correct ? 1000 : 0,
           };
 
           const questions = doc.questions;
