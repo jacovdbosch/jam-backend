@@ -16,11 +16,13 @@ const typeDefs = gql`
         label: String!
         correct: Boolean!
     }
-
+    
     input PlayerAnswerInput {
         questionId: ID!
         answerId: ID!
         playerId: ID!
+        # The time in milliseconds to answer the question.
+        timeToAnswerInMs: Int!
     }
 
     type PlayerAnswer {

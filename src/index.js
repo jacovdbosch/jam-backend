@@ -87,19 +87,25 @@ const server = new ApolloServer({
       },
       answerQuestion: (
         _,
-        { quizId, answer: { questionId, playerId, answerId } }
+        { quizId, answer: { questionId, playerId, answerId, timeToAnswerInMs } }
       ) => {
         return findQuiz(quizId).then(doc => {
           let questionIndex = doc.questions.findIndex(
             question => question.id === questionId
           );
 
+          const maxTimeToAnswer = 10000;
           let answer = doc.questions[questionIndex].answers.find(answer => answer.id === answerId);
+          let score = answer.correct ? 1000 : 0;
+
+          if (answer.correct && timeToAnswerInMs < maxTimeToAnswer) {
+            score = Math.floor((maxTimeToAnswer - timeToAnswerInMs) / maxTimeToAnswer * 1000 + score);
+          }
 
           const playerAnswers = {
             playerId,
             answerId,
-            score: answer.correct ? 1000 : 0,
+            score,
           };
 
           const questions = doc.questions;
