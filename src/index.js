@@ -57,7 +57,43 @@ const server = new ApolloServer({
           })
           .then(transformQuizDoc);
       },
-      startQuiz: (_, args) => {}
+      startQuiz: (_, args) => {
+      },
+      answerQuestion: (
+        _,
+        { quizId, answer: { questionId, playerId, answerId } }
+      ) => {
+        return findQuiz(quizId).then(doc => {
+          let questionIndex = doc.questions.findIndex(
+            question => question.id === questionId
+          );
+
+          const playerAnswers = {
+            playerId,
+            answerId
+          };
+
+          const questions = doc.questions;
+
+          if (!questions[questionIndex].playerAnswers) {
+            questions[questionIndex].playerAnswers = [];
+          }
+
+          questions[questionIndex].playerAnswers.push(playerAnswers);
+
+          return new Promise((resolve, reject) => {
+            quizzes.update(
+              { _id: doc._id },
+              { $set: { questions: questions } },
+              err => {
+                if (err) return reject(err);
+
+                return resolve(playerAnswers);
+              }
+            );
+          });
+        });
+      }
     }
   }
 });
