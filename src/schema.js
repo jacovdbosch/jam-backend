@@ -3,9 +3,7 @@ const { gql } = require("apollo-server");
 const typeDefs = gql`
     type Player {
         id: ID!
-        score: Int!
         name: String!
-        answers: [Answer]!
     }
 
     input AnswerInput {
@@ -26,6 +24,7 @@ const typeDefs = gql`
     type PlayerAnswer {
         answerId: ID!
         playerId: ID!
+        score: Int
     }
 
     type Question {
@@ -34,17 +33,22 @@ const typeDefs = gql`
         answers: [Answer]!
         playerAnswers: [PlayerAnswer]
     }
+    
+    type Results {
+        player: Player,
+        totalScore: Int
+    }
 
     type Quiz {
         id: ID!
         players: [Player]!
         questions: [Question]!
+        results: [Results]
     }
 
     type Query {
         quizzes: [Quiz]
         getQuiz(id: ID!): Quiz
-        getQuestion(quizId: ID!, questionId: ID!): Question!
     }
 
     type Mutation {

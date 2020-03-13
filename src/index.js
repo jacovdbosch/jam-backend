@@ -16,14 +16,27 @@ const transformQuizDoc = quiz => ({ id: quiz._id, ...quiz });
 const server = new ApolloServer({
   typeDefs,
   resolvers: {
-    Query: {
-      quizzes: () => allQuizzes().map(transformQuizDoc),
-      getQuiz: (_, args) => findQuiz(args.id).then(transformQuizDoc),
-      getQuestion: (_, { quizId, questionId }) => {
-        return findQuiz(quizId).then(doc => {
-          return doc.questions.find(question => question.id === questionId);
+    Quiz: {
+      results: (root) => {
+        if (root.questions === undefined) {
+          return [];
+        }
+
+        return root.players.map(player => {
+          const totalScore = root.questions.reduce((total, question) => {
+            return total + question.playerAnswers.filter(answer => answer.playerId === player.id).reduce((total, answer) => total + answer.score, 0);
+          }, 0);
+
+          return {
+            player,
+            totalScore
+          };
         });
       }
+    },
+    Query: {
+      quizzes: () => allQuizzes().map(transformQuizDoc),
+      getQuiz: (_, args) => findQuiz(args.id).then(transformQuizDoc)
     },
     Mutation: {
       createQuiz: () => createQuiz().then(transformQuizDoc),
