@@ -57,21 +57,22 @@ const typeDefs = gql`
 
     type Mutation {
         createQuiz: Quiz
-        startQuiz(quizId: ID!): Quiz
         joinQuiz(quizId: ID!, name: String!): Player
         addQuestion(quizId: ID!, label: String!, answers: [AnswerInput]!): Quiz
-        startQuestion(quizId: ID!): Boolean
         answerQuestion(quizId: ID!, answer: PlayerAnswerInput): PlayerAnswer
+        deleteQuestion(quizId: ID!, questionId: ID!): Quiz
+        #        startQuestion(quizId: ID!): Boolean
+        #        startQuiz(quizId: ID!): Quiz
     }
 
-    type Subscription {
-        quizStarted(quizId: ID!): Quiz
-        quizEnded(quizId: ID!): Quiz
-        questionHasStarted(quizId: ID!): Question
-        questionHasEnded(questionId: ID!): Question
-        playerJoinedQuiz(quizId: ID!): Player
-        playerAnsweredQuestion(questionId: ID!): Answer
-    }
+#    type Subscription {
+#        quizStarted(quizId: ID!): Quiz
+#        quizEnded(quizId: ID!): Quiz
+#        questionHasStarted(quizId: ID!): Question
+#        questionHasEnded(questionId: ID!): Question
+#        playerJoinedQuiz(quizId: ID!): Player
+#        playerAnsweredQuestion(questionId: ID!): Answer
+#    }
 `;
 
 module.exports = typeDefs;
