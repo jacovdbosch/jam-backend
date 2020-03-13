@@ -16,8 +16,6 @@ const transformQuizDoc = quiz => ({ id: quiz._id, ...quiz });
 
 const calculateResults = questions => player => {
   const totalScore = questions.reduce((total, question) => {
-    console.log(question);
-
     if (isEmpty(question.playerAnswers)) {
       return total;
     }
@@ -86,6 +84,15 @@ const server = new ApolloServer({
             return doc;
           })
           .then(transformQuizDoc);
+      },
+      getQuestion: (_, { quizId, questionId }, context) => {
+        return findQuiz(quizId).then((doc) => {
+          context.quiz = doc
+
+          const question = doc.questions.find(question => question.id === questionId);
+
+          return question;
+        })
       }
     },
     Mutation: {
