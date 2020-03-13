@@ -1,7 +1,7 @@
 #!usr/bin/env node
 const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./schema");
-const { isEmpty, remove } = require('lodash');
+const { isEmpty, remove } = require("lodash");
 const {
   allQuizzes,
   findQuiz,
@@ -14,42 +14,79 @@ const { v4: uuid } = require("uuid");
 
 const transformQuizDoc = quiz => ({ id: quiz._id, ...quiz });
 
+const calculateResults = questions => player => {
+  const totalScore = questions.reduce((total, question) => {
+    console.log(question);
+
+    if (isEmpty(question.playerAnswers)) {
+      return total;
+    }
+
+    const playerAnswers = question.playerAnswers.filter(answer => answer.playerId === player.id);
+
+    if (isEmpty(playerAnswers)) {
+      return total;
+    }
+
+    return total + playerAnswers.reduce((total, answer) => total + answer.score, 0);
+  }, 0);
+
+  return {
+    player,
+    totalScore
+  };
+};
+
 const server = new ApolloServer({
   typeDefs,
   resolvers: {
     Quiz: {
       results: (root) => {
-        if (isEmpty(root.questions) || isEmpty(root.players)){
+        if (isEmpty(root.questions) || isEmpty(root.players)) {
           return [];
         }
 
         const { questions, players } = root;
 
-        return players.map(player => {
-          const totalScore = questions.reduce((total, question) => {
-            if (isEmpty(question.playerAnswers)) {
-              return 0;
-            }
+        return players.map(calculateResults(questions));
+      }
+    },
+    Question: {
+      results: (question, args, context) => {
+        const { quiz } = context;
 
-            const playerAnswers = question.playerAnswers.filter(answer => answer.playerId === player.id);
+        if (isEmpty(quiz)) {
+          return [];
+        }
 
-            if (isEmpty(playerAnswers)) {
-              return 0;
-            }
+        const currentQuestionIndex = quiz.questions.findIndex(q => q.id === question.id);
+        const questions = quiz.questions.filter((question, key) => key <= currentQuestionIndex);
 
-            return total + playerAnswers.reduce((total, answer) => total + answer.score, 0);
-          }, 0);
+        return quiz.players.map(calculateResults(questions));
+      },
+      everybodyAnswered: (question, args, context) => {
+        if (isEmpty(question.playerAnswers)) {
+          return false;
+        }
 
-          return {
-            player,
-            totalScore
-          };
-        });
+        if (isEmpty(context.quiz) || isEmpty(context.quiz.players)) {
+          return false;
+        }
+
+        return question.playerAnswers.length >= context.quiz.players.length;
       }
     },
     Query: {
       quizzes: () => allQuizzes().map(transformQuizDoc),
-      getQuiz: (_, args) => findQuiz(args.id).then(transformQuizDoc)
+      getQuiz: (_, args, context) => {
+        return findQuiz(args.id)
+          .then(doc => {
+            context.quiz = doc;
+
+            return doc;
+          })
+          .then(transformQuizDoc);
+      }
     },
     Mutation: {
       createQuiz: () => createQuiz().then(transformQuizDoc),
@@ -91,7 +128,7 @@ const server = new ApolloServer({
             questions = questions.filter(question => question.id !== questionId);
 
             return new Promise((resolve, reject) => {
-              quizzes.update({ _id: doc._id }, { $set: { questions }}, (err, updated) => {
+              quizzes.update({ _id: doc._id }, { $set: { questions } }, (err, updated) => {
                 if (err) return reject(err);
 
                 return resolve(findQuiz(doc._id));
@@ -120,7 +157,7 @@ const server = new ApolloServer({
           const playerAnswers = {
             playerId,
             answerId,
-            score,
+            score
           };
 
           const questions = doc.questions;

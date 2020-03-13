@@ -35,7 +35,9 @@ const typeDefs = gql`
         id: ID!
         label: String!
         answers: [Answer]!
-        playerAnswers: [PlayerAnswer]
+        playerAnswers: [PlayerAnswer],
+        results: [Results]
+        everybodyAnswered: Boolean!
     }
     
     type Results {
@@ -61,18 +63,7 @@ const typeDefs = gql`
         addQuestion(quizId: ID!, label: String!, answers: [AnswerInput]!): Quiz
         answerQuestion(quizId: ID!, answer: PlayerAnswerInput): PlayerAnswer
         deleteQuestion(quizId: ID!, questionId: ID!): Quiz
-        #        startQuestion(quizId: ID!): Boolean
-        #        startQuiz(quizId: ID!): Quiz
     }
-
-#    type Subscription {
-#        quizStarted(quizId: ID!): Quiz
-#        quizEnded(quizId: ID!): Quiz
-#        questionHasStarted(quizId: ID!): Question
-#        questionHasEnded(questionId: ID!): Question
-#        playerJoinedQuiz(quizId: ID!): Player
-#        playerAnsweredQuestion(questionId: ID!): Answer
-#    }
 `;
 
 module.exports = typeDefs;
