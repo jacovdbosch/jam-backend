@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "apollo-server": "^2.11.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "nedb": "^1.8.0",
     "uuid": "^7.0.2"
   },
